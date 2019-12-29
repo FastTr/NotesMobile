@@ -4,6 +4,13 @@
 
 import 'package:flutter/material.dart';
 
+// import 'dart:async';
+// import 'package:path/path.dart';
+// import 'package:sqflite/sqflite.dart';
+
+import 'package:notes_mobile/database.dart';
+import 'package:notes_mobile/note.dart';
+
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
@@ -39,6 +46,20 @@ Widget myListView(BuildContext context, Map<String, String> notesMap) {
     },
   );
 
+}
+
+Widget tempButton(BuildContext context) {
+return new OutlineButton(
+            padding: new EdgeInsets.all(15.0),
+            child: new Text("Spreadsheet",
+                style: TextStyle(
+                  fontSize: 20.0,
+                  fontWeight: FontWeight.bold,
+                )),
+            onPressed: () {
+              null;
+            },
+            textColor: Colors.green);
 }
 
 class MyHomePage extends StatefulWidget {
@@ -172,24 +193,21 @@ class NewNotePage extends StatelessWidget{
                         fontSize: 20.0,
                         fontWeight: FontWeight.bold,
                       )),
-                      // Figure out how to make the new note show up after clicking submit button
-                  onPressed: () {
-                    
-                    Navigator.pop(context);
+                  onPressed: () async {
+                    // Add new note to notesMap
                     notesMap[notesTitleController.text] = notesContentController.text;
+                    // Save the new data into datbase
+                    await NoteDatabaseProvider.db.addNoteToDatabase(new Note(
+                      noteTitle: notesTitleController.text,
+                      noteContent: notesContentController.text));
+                    Navigator.pop(context);
+                    NoteDatabaseProvider.db.getAllNotes();
                     // setState() {
 
                     // }                    
                   },
                   
                   textColor: Colors.green),
-
-                  // new Expanded(child: new ListView.builder(
-                  //   itemCount: notesMap.length, 
-                  //   itemBuilder: (BuildContext context, int index) {
-                  //     _myListView(context, notesTitleController.text, notesContentController.text);
-                  //   },
-                  //   )),
             ],
           ),
           
