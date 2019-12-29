@@ -124,17 +124,10 @@ class _MyHomePageState extends State<MyHomePage> {
 
 class NewNotePage extends StatelessWidget{
 
-
-
   @override
   Widget build(BuildContext context) {
     final TextEditingController notesTitleController = new TextEditingController();
     final TextEditingController notesContentController = new TextEditingController();
-    String noteTitle = "";
-    String noteContent = "";
-
-
-
 
   // void disposeNotesTitle() {
   //   // Clean up the controller when the widget is disposed.
