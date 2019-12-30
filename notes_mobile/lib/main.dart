@@ -4,10 +4,6 @@
 
 import 'package:flutter/material.dart';
 
-// import 'dart:async';
-// import 'package:path/path.dart';
-// import 'package:sqflite/sqflite.dart';
-
 import 'package:notes_mobile/database.dart';
 import 'package:notes_mobile/note.dart';
 
@@ -32,35 +28,40 @@ buttonPressed() {
 }
 
 Map<String, String> notesMap = new Map<String, String>();
+Future<List<Note>> getList() async {
+  return NoteDatabaseProvider.db.getAllNotes();
+
+}
+
 
 // TODO: Add new notes to a ListView dynamically
-Widget myListView(BuildContext context, Map<String, String> notesMap) {
-
-  return new ListView.builder(
-    itemCount: notesMap.length,
-    itemBuilder: (BuildContext context, int index) {
-      return ListTile(
-        title: Text("${notesMap.keys.elementAt(index)}"),
-        subtitle: Text("${notesMap[notesMap.keys.elementAt(index)]}"),
+Widget myListView(BuildContext context) {
+  return new FutureBuilder(
+    future: getList(),
+    builder: (BuildContext context, AsyncSnapshot<List> snapshot) {
+      if (!snapshot.hasData) {
+        return new Container();
+      }
+      print("Snapshot is the issue");
+      print("STUFF" + snapshot.data[1].toString());
+      List<Note> notes = snapshot.data;
+      print(notes.length);
+      return new ListView.builder(
+        scrollDirection: Axis.vertical,
+        padding: new EdgeInsets.all(5.0),
+        itemCount: notes.length,
+        itemBuilder: (BuildContext context, int index) {
+          return ListTile(
+            title: Text("${notes.elementAt(index).noteTitle}"),
+            subtitle: Text("${notes.elementAt(index).noteContent}"),
+          );
+        },
       );
-    },
+    }
   );
 
 }
 
-Widget tempButton(BuildContext context) {
-return new OutlineButton(
-            padding: new EdgeInsets.all(15.0),
-            child: new Text("Spreadsheet",
-                style: TextStyle(
-                  fontSize: 20.0,
-                  fontWeight: FontWeight.bold,
-                )),
-            onPressed: () {
-              null;
-            },
-            textColor: Colors.green);
-}
 
 class MyHomePage extends StatefulWidget {
   MyHomePage({Key key, this.title}) : super(key: key);
@@ -125,7 +126,7 @@ class _MyHomePageState extends State<MyHomePage> {
         appBar: AppBar(
           title: Text(widget.title),
         ),
-        body: myListView(context, notesMap),
+        body: myListView(context),
 
         floatingActionButton: new FloatingActionButton(
           onPressed: (){
@@ -149,17 +150,6 @@ class NewNotePage extends StatelessWidget{
   Widget build(BuildContext context) {
     final TextEditingController notesTitleController = new TextEditingController();
     final TextEditingController notesContentController = new TextEditingController();
-
-  // void disposeNotesTitle() {
-  //   // Clean up the controller when the widget is disposed.
-  //   notesTitleController.dispose();
-  //   super.dispose();
-  // }
-
-  // void disposeNotesContent() {
-  //   notesContentController.dispose();
-  //   super.dispose();
-  // }
     
     return Scaffold(
       appBar: AppBar(
@@ -202,9 +192,7 @@ class NewNotePage extends StatelessWidget{
                       noteContent: notesContentController.text));
                     Navigator.pop(context);
                     NoteDatabaseProvider.db.getAllNotes();
-                    // setState() {
-
-                    // }                    
+                
                   },
                   
                   textColor: Colors.green),
