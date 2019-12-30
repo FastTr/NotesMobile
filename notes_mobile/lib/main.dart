@@ -19,13 +19,13 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       home: MyHomePage(title: 'Notes'),
+      routes: {
+        EditNotesPage.routeName: (context) => EditNotesPage(),
+      }
     );
   }
 }
 
-buttonPressed() {
-  print("BUTTON CLICKED");
-}
 
 Map<String, String> notesMap = new Map<String, String>();
 Future<List<Note>> getList() async {
@@ -36,16 +36,15 @@ Future<List<Note>> getList() async {
 
 // TODO: Add new notes to a ListView dynamically
 Widget myListView(BuildContext context) {
+  // NoteDatabaseProvider.db.deleteAllNotes();
   return new FutureBuilder(
     future: getList(),
     builder: (BuildContext context, AsyncSnapshot<List> snapshot) {
       if (!snapshot.hasData) {
         return new Container();
       }
-      print("Snapshot is the issue");
-      print("STUFF" + snapshot.data[1].toString());
+
       List<Note> notes = snapshot.data;
-      print(notes.length);
       return new ListView.builder(
         scrollDirection: Axis.vertical,
         padding: new EdgeInsets.all(5.0),
@@ -54,6 +53,13 @@ Widget myListView(BuildContext context) {
           return ListTile(
             title: Text("${notes.elementAt(index).noteTitle}"),
             subtitle: Text("${notes.elementAt(index).noteContent}"),
+            onTap: () {
+              Navigator.pushNamed(
+                context,
+                EditNotesPage.routeName,
+                arguments: EditNotesArguments(notes.elementAt(index).id, notes.elementAt(index).noteTitle, notes.elementAt(index).noteContent),
+              );
+            },
           );
         },
       );
@@ -77,7 +83,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    
+
     ListView drawerListView = new ListView(
       children: <Widget>[
         new OutlineButton(
@@ -198,10 +204,81 @@ class NewNotePage extends StatelessWidget{
                   textColor: Colors.green),
             ],
           ),
-          
         ),
-
-
     );
   }
+}
+
+
+class EditNotesArguments {
+  final int id;
+  final String title;
+  final String content;
+
+  EditNotesArguments(this. id, this.title, this.content);
+}
+
+class EditNotesPage extends StatelessWidget {
+
+  static const routeName = '/editNotes';
+
+  @override
+  Widget build(BuildContext context) {
+
+    final EditNotesArguments args = ModalRoute.of(context).settings.arguments;
+    final TextEditingController notesTitleController = new TextEditingController(text: args.title);
+    final TextEditingController notesContentController = new TextEditingController(text: args.content);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Edit Note"),
+      ),
+      body: Padding(
+          padding: const EdgeInsets.all(15.0),
+          child: new Column(
+            children: <Widget>[
+              TextField(
+                  controller: notesTitleController,
+                  maxLines: 1,
+                  decoration: InputDecoration(
+                    hintText: "Enter note title here",
+                    border: OutlineInputBorder(),
+                  )),
+              Container(height: 20),
+              TextField(
+                controller: notesContentController,
+                maxLines: 2,
+                decoration: InputDecoration(
+                  hintText: "Enter note here",
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              Container(height: 15),
+              new OutlineButton(
+                  padding: new EdgeInsets.all(15.0),
+                  child: new Text("Update note",
+                      style: TextStyle(
+                        fontSize: 20.0,
+                        fontWeight: FontWeight.bold,
+                      )),
+                  onPressed: () async {
+                    // Add new note to notesMap
+                    notesMap[notesTitleController.text] = notesContentController.text;
+                    // Update the data in the database
+                    await NoteDatabaseProvider.db.updateExistingNote(new Note(id: args.id,
+                      noteTitle: notesTitleController.text,
+                      noteContent: notesContentController.text));
+                    Navigator.pop(context);
+                    NoteDatabaseProvider.db.getAllNotes();
+                
+                  },
+                  
+                  textColor: Colors.green),
+            ],
+          ),
+        ),
+    );
+  }
+
+  
 }

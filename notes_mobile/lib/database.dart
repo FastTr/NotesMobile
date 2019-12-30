@@ -33,16 +33,10 @@ class NoteDatabaseProvider {
     });
   }
 
-  addNoteToDatabase(Note note) async {
-    final db = await database;
-    var raw = await db.insert("Notes", note.toMap(), conflictAlgorithm: ConflictAlgorithm.replace,);
-    return raw;
-  }
-
-
   Future<List<Note>> getAllNotes() async {
     final db = await database;
     var response = await db.query("Notes");
+    print(response.length);
     List<Note> list = response.map((c) => Note.fromMap(c)).toList();
     
     for (Note n in list) {
@@ -51,6 +45,34 @@ class NoteDatabaseProvider {
 
     return list;
   }
+
+  void deleteAllNotes() async {
+    final db = await database;
+    db.delete("Notes");
+  }
+
+  // change to void or keep return type?
+  addNoteToDatabase(Note note) async {
+    final db = await database;
+    var raw = await db.insert("Notes", note.toMap(), conflictAlgorithm: ConflictAlgorithm.replace,);
+    return raw;
+  }
+
+  updateExistingNote(Note note) async {
+    final db = await database;
+    var response = await db.update("Notes", note.toMap(), where: "id = ?", whereArgs: [note.id]);
+    print("UPDATED");
+    return response;
+  }
+
+  void deleteNoteWithId(int id) async {
+    final db = await database;
+    db.delete("Notes", where: "id = ?", whereArgs: [id]);
+  }
+
+
+
+
 
 }
 
