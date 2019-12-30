@@ -250,6 +250,22 @@ class EditNotesPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text("Edit Note"),
+        actions: <Widget>[
+          FlatButton(
+            child: Text("DELETE NOTE"),              
+            textColor: Colors.black,
+            onPressed: () {
+              NoteDatabaseProvider.db.deleteNoteWithId(args.id);
+              Navigator.pop(context);
+              NoteDatabaseProvider.db.getAllNotes();              
+            },
+            shape: CircleBorder(
+              side: BorderSide(
+                color: Colors.transparent,
+              )
+            )
+          ),
+        ],
       ),
       body: Padding(
           padding: const EdgeInsets.all(15.0),
