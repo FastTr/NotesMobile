@@ -36,7 +36,7 @@ Future<List<Note>> getList() async {
 
 // TODO: Add new notes to a ListView dynamically
 Widget myListView(BuildContext context) {
-  // NoteDatabaseProvider.db.deleteAllNotes();
+
   return new FutureBuilder(
     future: getList(),
     builder: (BuildContext context, AsyncSnapshot<List> snapshot) {
@@ -131,6 +131,24 @@ class _MyHomePageState extends State<MyHomePage> {
         drawer: drawer,
         appBar: AppBar(
           title: Text(widget.title),
+          actions: <Widget>[
+            FlatButton(
+              child: Text("DELETE ALL NOTES"),              
+              textColor: Colors.black,
+              onPressed: () {
+                NoteDatabaseProvider.db.deleteAllNotes();
+                setState(() {
+                  
+                });
+              },
+              shape: CircleBorder(
+                side: BorderSide(
+                  color: Colors.transparent,
+                )
+              )
+            ),
+          ],
+
         ),
         body: myListView(context),
 
