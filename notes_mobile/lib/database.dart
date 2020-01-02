@@ -13,24 +13,33 @@ class NoteDatabaseProvider {
   Database _database;
 
   Future<Database> get database async {
-    if (_database != null) {
-      return _database;
-    }
+    // if (_database != null) {
+    //   return _database;
+    // }
 
     _database = await getDatabaseInstance();
     return _database;
   }
+  
+  void _onUpgrade(Database db, int oldVersion, int newVersion) {
+    print("made it");
+    db.execute("ALTER TABLE Notes ADD COLUMN dayNoteMade TEXT;");
+  }
 
   Future<Database> getDatabaseInstance() async {
+    print("HERE");
     Directory directory = await getApplicationDocumentsDirectory();
     String path = join(directory.path, "notes.db");
-    return await openDatabase(path, version: 1, onCreate: (Database db, int version) async {
-      await db.execute(" CREATE TABLE Notes (" 
-      "id integer primary key AUTOINCREMENT,"
-      "noteTitle TEXT,"
-      "noteContent TEXT" 
-      ")");
-    });
+
+    return await openDatabase(path, version: 5, onUpgrade: _onUpgrade, onCreate: (Database db, int version) async {
+
+        await db.execute(" CREATE TABLE Notes (" 
+        "id integer primary key AUTOINCREMENT,"
+        "noteTitle TEXT,"
+        "noteContent TEXT,"
+        ")");
+
+    });    
   }
 
   Future<List<Note>> getAllNotes() async {
@@ -40,7 +49,7 @@ class NoteDatabaseProvider {
     List<Note> list = response.map((c) => Note.fromMap(c)).toList();
     
     for (Note n in list) {
-      print("TITLE: ${n.noteTitle} --- CONTENT: ${n.noteContent}");
+      print("TITLE: ${n.noteTitle} --- CONTENT: ${n.noteContent} --- TIME: ${n.timeNoteMade} --- DATE: ${n.dateNoteMade}");
     }
 
     return list;

@@ -3,9 +3,10 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:flutter/material.dart';
-
 import 'package:notes_mobile/database.dart';
 import 'package:notes_mobile/note.dart';
+import 'package:intl/intl.dart';
+
 
 void main() => runApp(MyApp());
 
@@ -34,7 +35,6 @@ Future<List<Note>> getList() async {
 }
 
 
-// TODO: Add new notes to a ListView dynamically
 Widget myListView(BuildContext context) {
 
   return new FutureBuilder(
@@ -47,25 +47,46 @@ Widget myListView(BuildContext context) {
       List<Note> notes = snapshot.data;
       return Flexible(
           child: ListView.builder(
-          scrollDirection: Axis.vertical,
-          padding: new EdgeInsets.all(5.0),
-          itemCount: notes.length,
-          itemBuilder: (BuildContext context, int index) {
-            return new Card(
-                child: ListTile(
-                  title: Text("${notes.elementAt(index).noteTitle}"),
-                  subtitle: Text("${notes.elementAt(index).noteContent}"),
-                  onTap: () {
-                    Navigator.pushNamed(
-                      context,
-                      EditNotesPage.routeName,
-                      arguments: EditNotesArguments(notes.elementAt(index).id, notes.elementAt(index).noteTitle, notes.elementAt(index).noteContent),
-                    );
-                  },
-                ),
-                elevation: 3.0,
-              );
-          },
+            scrollDirection: Axis.vertical,
+            padding: new EdgeInsets.all(5.0),
+            itemCount: notes.length,
+            itemBuilder: (BuildContext context, int index) {
+              return new Card(
+                  child: Column(
+                    children: <Widget>[
+                      ListTile(
+                        title: Text("${notes.elementAt(index).noteTitle}"),
+                        subtitle: Text("${notes.elementAt(index).noteContent}"),
+                        onTap: () {
+                          Navigator.pushNamed(
+                            context,
+                            EditNotesPage.routeName,
+                            arguments: EditNotesArguments(
+                              notes.elementAt(index).id,
+                              notes.elementAt(index).noteTitle,
+                              notes.elementAt(index).noteContent,
+                              notes.elementAt(index).timeNoteMade,
+                              notes.elementAt(index).dateNoteMade,
+                              notes.elementAt(index).dayNoteMade
+                            ),
+                          );
+                        },
+                        // trailing: new Text("${notes.elementAt(index).timeNoteMade}"),
+                      ),
+                      new Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: <Widget>[
+                          Padding(
+                            padding: const EdgeInsets.only(left: 16.0, bottom: 5.0),
+                            child: new Text("${notes.elementAt(index).dayNoteMade} ${notes.elementAt(index).dateNoteMade} ${notes.elementAt(index).timeNoteMade}"),
+                          ),
+                        ],
+                      )
+                    ],
+                  ),
+                  elevation: 3.0,
+                );
+            },
         ),
       );
     }
@@ -224,11 +245,22 @@ class NewNotePage extends StatelessWidget{
                   onPressed: () async {
                     // Add new note to notesMap
                     notesMap[notesTitleController.text] = notesContentController.text;
+
                     // Save the new data into datbase
-                    await NoteDatabaseProvider.db.addNoteToDatabase(new Note(
-                      noteTitle: notesTitleController.text,
-                      noteContent: notesContentController.text));
+                    await NoteDatabaseProvider.db.addNoteToDatabase(
+                      new Note(
+                        noteTitle: notesTitleController.text,
+                        noteContent: notesContentController.text,
+                        timeNoteMade: new TimeOfDay.now().format(context),
+                        dateNoteMade: "${new DateFormat("MMM").format(new DateTime.now())} ${new DateTime.now().day}, ${new DateTime.now().year}",
+                        dayNoteMade: "${new DateFormat("EEEE").format(new DateTime.now())}",
+                      )
+                    );
+
+                    // Go back to home page  
                     Navigator.pop(context);
+
+                    // Populate home page with updated notes
                     NoteDatabaseProvider.db.getAllNotes();
                 
                   },
@@ -246,8 +278,11 @@ class EditNotesArguments {
   final int id;
   final String title;
   final String content;
+  final String timeMade;
+  final String dateNoteMade;
+  final String dayNoteMade;
 
-  EditNotesArguments(this. id, this.title, this.content);
+  EditNotesArguments(this. id, this.title, this.content, this.timeMade, this.dateNoteMade, this.dayNoteMade);
 }
 
 class EditNotesPage extends StatelessWidget {
@@ -313,9 +348,15 @@ class EditNotesPage extends StatelessWidget {
                     // Add new note to notesMap
                     notesMap[notesTitleController.text] = notesContentController.text;
                     // Update the data in the database
-                    await NoteDatabaseProvider.db.updateExistingNote(new Note(id: args.id,
-                      noteTitle: notesTitleController.text,
-                      noteContent: notesContentController.text));
+                    await NoteDatabaseProvider.db.updateExistingNote(
+                      new Note(id: args.id,
+                        noteTitle: notesTitleController.text,
+                        noteContent: notesContentController.text,
+                        timeNoteMade: new TimeOfDay.now().format(context),
+                        dateNoteMade: "${new DateFormat("MMM").format(new DateTime.now())} ${new DateTime.now().day}, ${new DateTime.now().year}",
+                        dayNoteMade: "${new DateFormat("EEEE").format(new DateTime.now())}",
+                      )
+                    );
                     Navigator.pop(context);
                     NoteDatabaseProvider.db.getAllNotes();
                 
