@@ -45,27 +45,31 @@ Widget myListView(BuildContext context) {
       }
 
       List<Note> notes = snapshot.data;
-      return new ListView.builder(
-        scrollDirection: Axis.vertical,
-        padding: new EdgeInsets.all(5.0),
-        itemCount: notes.length,
-        itemBuilder: (BuildContext context, int index) {
-          return ListTile(
-            title: Text("${notes.elementAt(index).noteTitle}"),
-            subtitle: Text("${notes.elementAt(index).noteContent}"),
-            onTap: () {
-              Navigator.pushNamed(
-                context,
-                EditNotesPage.routeName,
-                arguments: EditNotesArguments(notes.elementAt(index).id, notes.elementAt(index).noteTitle, notes.elementAt(index).noteContent),
+      return Flexible(
+          child: ListView.builder(
+          scrollDirection: Axis.vertical,
+          padding: new EdgeInsets.all(5.0),
+          itemCount: notes.length,
+          itemBuilder: (BuildContext context, int index) {
+            return new Card(
+                child: ListTile(
+                  title: Text("${notes.elementAt(index).noteTitle}"),
+                  subtitle: Text("${notes.elementAt(index).noteContent}"),
+                  onTap: () {
+                    Navigator.pushNamed(
+                      context,
+                      EditNotesPage.routeName,
+                      arguments: EditNotesArguments(notes.elementAt(index).id, notes.elementAt(index).noteTitle, notes.elementAt(index).noteContent),
+                    );
+                  },
+                ),
+                elevation: 3.0,
               );
-            },
-          );
-        },
+          },
+        ),
       );
     }
   );
-
 }
 
 
@@ -150,7 +154,17 @@ class _MyHomePageState extends State<MyHomePage> {
           ],
 
         ),
-        body: myListView(context),
+        body: 
+          new Container(
+            child:
+              new Column(
+                children: 
+                  <Widget>[
+                    myListView(context),
+                  ],
+              )
+            ),
+
 
         floatingActionButton: new FloatingActionButton(
           onPressed: (){
